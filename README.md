@@ -14,3 +14,5 @@ Moralis Next-Auth Next React React-Dom
 
 wagmi & viem (web3) for MetaMask
 'npm install wagmi viem'
+
+-
