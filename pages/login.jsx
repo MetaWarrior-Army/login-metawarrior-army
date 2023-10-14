@@ -47,7 +47,8 @@ function SignIn({ login_challenge }) {
       callbackUrl: "/user",
       payload: JSON.stringify({login_challenge: login_challenge}),
     };
-    const { url } = await signIn("moralis-auth", options);
+    var callback = await signIn("moralis-auth", options);
+    console.log(callback);
 
     
 
@@ -55,10 +56,13 @@ function SignIn({ login_challenge }) {
     * instead of using signIn(..., redirect: "/user")
     * we get the url from callback and push it to the router to avoid page refreshing
     */
-    if(url){
-      push(url);
+    if(callback){
+      console.log(callback.url);
+      push(callback.url);
     }
-    push(url);
+    else{
+      console.log(callback);
+    }
   };
 
   return (
@@ -72,10 +76,17 @@ function SignIn({ login_challenge }) {
 export const getServerSideProps = (async (context) => {
   console.log(context.req.method);
   const {login_challenge, message, signature} = context.query;
+
+  try {
+    const login_req = await hydraAdmin.getOAuth2LoginRequest({loginChallenge: login_challenge});
+    console.log(login_req);
+  }
+  catch (error){
+    console.log(error);
+    return {props: {}};
+  }
   
 
-  const login_req = await hydraAdmin.getOAuth2LoginRequest({loginChallenge: login_challenge});
-  console.log(login_req);
 
   return {props: {login_challenge}};
   

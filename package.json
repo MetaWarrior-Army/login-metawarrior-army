@@ -17,6 +17,8 @@
     "@ory/client": "^1.2.10",
     "@ory/hydra-client": "^2.2.0-rc.3",
     "@ory/integrations": "^1.1.5",
+    "axios": "^1.5.1",
+    "circular-json": "^0.5.9",
     "csurf": "^1.11.0",
     "fs": "^0.0.1-security",
     "moralis": "^2.23.1",

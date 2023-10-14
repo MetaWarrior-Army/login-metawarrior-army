@@ -36,7 +36,7 @@ export default NextAuth({
           console.log(login_challenge);
           var options = {subject: String(address),};
           
-          let accpt_req = await hydraAdmin.acceptOAuth2LoginRequest(login_challenge,{subject: address,});
+          var accpt_req = await hydraAdmin.acceptOAuth2LoginRequest({loginChallenge: login_challenge, acceptOAuth2LoginRequest: {'subject': address, remember: false,}});
   
         }
         catch (error) {
@@ -46,7 +46,9 @@ export default NextAuth({
         }
         
         console.log("ACCEPT LOGIN REQUEST");
-        console.log(accpt_req);
+        //console.log(accpt_req);
+        var callback = accpt_req.data.redirect_to;
+        console.log("Callback: ", callback);
         
         /*
         hydraAdmin.acceptOAuth2LoginRequest(login_challenge, {
@@ -55,10 +57,13 @@ export default NextAuth({
         })
         */
         console.log("Subject: %s" % (address));
+        return callback;
 
       }
+
+      var callback = user.credentials.callbackUrl;
       
-      return true;
+      return callback;
     },
   },
 });
