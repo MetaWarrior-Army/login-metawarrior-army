@@ -18,4 +18,8 @@ wagmi & viem (web3) for MetaMask
 
 `npm install wagmi viem`
 
+Net, TLS, fs 
+`npm install net tls fs`
+
 ![screenshot](https://github.com/MetaWarrior-Army/login-metawarrior-army/blob/2941ed7533ff83524189edbb2dea918b8b171091/github/pics/login_mwa.png)
+

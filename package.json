@@ -14,16 +14,29 @@
   "license": "ISC",
   "dependencies": {
     "@moralisweb3/next": "^2.23.1",
+    "@ory/client": "^1.2.10",
+    "@ory/hydra-client": "^2.2.0-rc.3",
+    "@ory/integrations": "^1.1.5",
+    "csurf": "^1.11.0",
+    "fs": "^0.0.1-security",
     "moralis": "^2.23.1",
-    "next": "^13.5.3",
+    "net": "^1.0.2",
+    "next": "^12.3.4",
     "next-auth": "^4.23.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "viem": "^1.12.2",
+    "request": "^2.88.2",
+    "tls": "^0.0.1",
+    "viem": "^1.14.0",
     "wagmi": "^1.4.2"
   },
   "devDependencies": {
     "@types/react": "18.2.22",
     "typescript": "5.2.2"
+  },
+  "browser": {
+    "fs": false,
+    "path": false,
+    "os": false
   }
 }
