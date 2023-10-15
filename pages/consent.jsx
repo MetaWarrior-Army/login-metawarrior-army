@@ -1,21 +1,8 @@
-'use server'
-import { MetaMaskConnector } from "wagmi/connectors/metaMask";
-import { getSession, signIn } from "next-auth/react";
-import { useAccount, useConnect, useSignMessage, useDisconnect } from "wagmi";
-import { useRouter } from "next/router";
-import { useAuthRequestChallengeEvm } from "@moralisweb3/next";
-const circJSON = require('circular-json');
+import Head from 'next/head';
 
 import { hydraAdmin } from '../src/hydra_config.ts';
 
 function Consent({ consent_challenge, client_id, client_name, requested_scope }) {
-  const { connectAsync } = useConnect();
-  const { disconnectAsync } = useDisconnect();
-  const { isConnected } = useAccount();
-  const { signMessageAsync } = useSignMessage();
-  const { requestChallengeAsync } = useAuthRequestChallengeEvm();
-  const { push } = useRouter();
-  
   console.log("CONSENT CHALLENGE");
   console.log({consent_challenge});
 
@@ -24,13 +11,9 @@ function Consent({ consent_challenge, client_id, client_name, requested_scope })
   console.log("CLIENT NAME: "+client_name);
   console.log("REQUESTED SCOPE: "+requested_scope);
   
-  
-  const handleConsent = async () => {
-
-  };
-  
 
   return (
+    <>
     <div>
       <h3>Consent</h3>
       <form action={"/consent?consent_challenge="+consent_challenge} method="GET">
@@ -61,10 +44,11 @@ function Consent({ consent_challenge, client_id, client_name, requested_scope })
 
 
     </div>
+    </>
   );
 }
 
-export const getServerSideProps = (async (context) => {
+export const getS</>erverSideProps = (async (context) => {
   console.log(context.req.method);
   //console.log(context.query);
   var { consent_challenge, submit, grant_scope, remember } = context.query;
@@ -78,10 +62,28 @@ export const getServerSideProps = (async (context) => {
   }
 
   if(submit){
+    var session = {
+      access_token: {
+        username: 'test',
+        usersecret: 'test_secret'
+
+      },
+
+      id_token: {
+        username: 'test'
+      }
+    };
+
+
     if(submit == 'Allow access'){
-      console.log("ALLOW ACCESS");
       try{
-        var accept_req = await hydraAdmin.acceptOAuth2ConsentRequest({consentChallenge: consent_challenge, acceptOAuth2ConsentRequest: {grant_scope: grant_scope,}});
+        var accept_req = await hydraAdmin.acceptOAuth2ConsentRequest({
+          consentChallenge: consent_challenge, 
+          acceptOAuth2ConsentRequest: {
+            grant_scope: grant_scope,
+            session: session,
+          }
+        });
         console.log(accept_req);
       }
       catch(error){
@@ -104,8 +106,6 @@ export const getServerSideProps = (async (context) => {
   try {
     var consent_req = await hydraAdmin.getOAuth2ConsentRequest({consentChallenge: consent_challenge});
 
-    //console.log(consent_req.data);
-    //console.log("^^CONSENT REQUEST^^");
     var client_id = consent_req.data.client.client_id;
     var client_name = consent_req.data.client.client_name;
     var requested_scope = consent_req.data.requested_scope;
