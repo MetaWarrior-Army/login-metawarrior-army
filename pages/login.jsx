@@ -4,11 +4,9 @@ import { useAccount, useConnect, useSignMessage, useDisconnect } from "wagmi";
 import { useAuthRequestChallengeEvm } from "@moralisweb3/next";
 // NextJS helpers
 import { getSession, signIn } from "next-auth/react";
-import Head from 'next/head';
 import { useRouter } from "next/router";
 // Hydra OAuth2 Config
 import { hydraAdmin } from '../src/hydra_config.ts';
-
 
 // SignIn Page
 function SignIn({ login_challenge }) {
@@ -58,46 +56,28 @@ function SignIn({ login_challenge }) {
 
   return (
     <>
-    
-    <body class="d-flex h-100 text-center text-bg-dark">
-    <div class="cover-container d-flex w-100 h-100 p-3 mx-auto flex-column">
-
-    <header class="mb-auto">
-    <div>
-      <h3 class="float-md-start mb-0">MetaWarrior Army</h3>
-      <nav class="nav nav-masthead justify-content-center float-md-end">
-        <a class="nav-link fw-bold py-1 px-0" aria-current="page" href="/">Home</a>
-		    <a class="nav-link fw-bold py-1 px-0 active" href="/dev/callback.php">callback</a>
-        
-      </nav>
-    </div>
-  </header>
-
-
-
-
-      <h3>Choose a wallet to login with</h3>
+        <h3>Choose a wallet to login with</h3>
+        <div className="container left-align">
   
-      {connectors.map((connector) => (
-        
-        <button type="button" class="btn btn-outline-secondary btn-lg btn-block"
-          disabled={!connector.ready}
-          key={connector.id}
-          onClick={() => connectorLogin({connector})}
-        >
-          {connector.name}
-          {!connector.ready && ' (unsupported)'}
-          {isLoading &&
-            connector.id === pendingConnector?.id &&
-            ' (connecting)'}
-        </button>
-        
-      ))}
+        {connectors.map((connector) => (
+          <button type="button" className="btn btn-outline-secondary btn-lg btn-block"
+            disabled={!connector.ready}
+            key={connector.id}
+            onClick={() => connectorLogin({connector})}
+          >
+            {connector.name}
+            {!connector.ready && ' (unsupported)'}
+            {isLoading &&
+              connector.id === pendingConnector?.id &&
+              ' (connecting)'}
+          </button>
+          
+        ))}
+        </div>
  
-      {error && <div>{error.message}</div>}
+        {error && <div>{error.message}</div>}
 
-    </div>
-    </body>
+
     </>
   );
 }

@@ -1,17 +1,7 @@
-import Head from 'next/head';
-
 import { hydraAdmin } from '../src/hydra_config.ts';
 
 function Consent({ consent_challenge, client_id, client_name, requested_scope }) {
-  console.log("CONSENT CHALLENGE");
-  console.log({consent_challenge});
-
-  console.log("CONSENT REQUEST");
-  console.log("CLIENT ID: "+client_id);
-  console.log("CLIENT NAME: "+client_name);
-  console.log("REQUESTED SCOPE: "+requested_scope);
   
-
   return (
     <>
     <div>
@@ -48,35 +38,32 @@ function Consent({ consent_challenge, client_id, client_name, requested_scope })
   );
 }
 
-export const getS</>erverSideProps = (async (context) => {
-  console.log(context.req.method);
-  //console.log(context.query);
+export const getServerSideProps = (async (context) => {
+  // get query
   var { consent_challenge, submit, grant_scope, remember } = context.query;
-  console.log(context.query);
   var props;
 
-  const fs = require('fs');
-
+  // If grant scope isn't an array, make it one
   if(!Array.isArray(grant_scope)){
     grant_scope = [grant_scope];
   }
 
+  // is the user submiting a response?
   if(submit){
     var session = {
       access_token: {
         username: 'test',
         usersecret: 'test_secret'
-
       },
-
       id_token: {
         username: 'test'
       }
     };
 
-
+    // Is the user allowing access?
     if(submit == 'Allow access'){
       try{
+        // accept on OAuth server
         var accept_req = await hydraAdmin.acceptOAuth2ConsentRequest({
           consentChallenge: consent_challenge, 
           acceptOAuth2ConsentRequest: {
@@ -84,12 +71,12 @@ export const getS</>erverSideProps = (async (context) => {
             session: session,
           }
         });
-        console.log(accept_req);
       }
       catch(error){
         console.log(error);
       }
 
+      // redirect user back to client
       if(accept_req.data.redirect_to){
         return {
           redirect: {
@@ -97,15 +84,15 @@ export const getS</>erverSideProps = (async (context) => {
             permanent: false,
           }
         };
-
       }
-      
     }
   }
 
+  // Get the Consent Request
   try {
     var consent_req = await hydraAdmin.getOAuth2ConsentRequest({consentChallenge: consent_challenge});
 
+    // Set serverside props
     var client_id = consent_req.data.client.client_id;
     var client_name = consent_req.data.client.client_name;
     var requested_scope = consent_req.data.requested_scope;
@@ -115,7 +102,6 @@ export const getS</>erverSideProps = (async (context) => {
     console.log(error);
     var props = {consent_challenge};
   }
-
 
   return {props: props};  
 

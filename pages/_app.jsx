@@ -16,18 +16,15 @@ import { mainnet, polygon } from "wagmi/chains";
 // Next Auth Session Control
 import { SessionProvider } from "next-auth/react";
 
-// Import Bootstrap CSS & JS
-// Bootstrap CSS
-import "bootstrap/dist/css/bootstrap.min.css";
-import { useEffect } from "react";
-import Head from "next/head";
-
+// Global CSS
+import './css/global.css';
 
 const { chains, publicClient, webSocketPublicClient } = configureChains(
   [polygon],
   [infuraProvider({ apiKey: process.env.INFURA_API_KEY }), publicProvider()]
 );
 
+// Setup Web3 connectors
 const config = createConfig({
   autoConnect: true,
   connectors: [
@@ -57,24 +54,31 @@ const config = createConfig({
 });
 
 function MyApp({ Component, pageProps }) {
-
-  useEffect(() => {
-    import("bootstrap/dist/js/bootstrap");
-  }, []);
+  // use bootstrap js
 
   return (
-    <>
     <WagmiConfig config={config}>
-      <SessionProvider session={pageProps.session} refetchInterval={0}>
-      <Head>
-        <meta name="viewport" content="width=device-width, initial-scale=1"></meta>
-        <title>Authorize Access to MetaWarrior Army</title>
-      </Head>
-        <Component {...pageProps} />
-      </SessionProvider>
-    </WagmiConfig>
+    <SessionProvider session={pageProps.session} refetchInterval={0}>
+      <div className="cover-container d-flex w-100 h-100 p-3 mx-auto flex-column">
 
-    </>
+        <header className="mb-auto">
+          <div>
+            <h3 className="float-md-start mb-0">MetaWarrior Army</h3>
+            <nav className="nav nav-masthead justify-content-center float-md-end">
+              <a className="nav-link fw-bold py-1 px-0" href="/">Home</a>
+              <a className="nav-link fw-bold py-1 px-0 active" href="/dev/callback.php">callback</a>
+            </nav>
+          </div>
+        </header>
+        <main class="px-3">
+
+            <Component {...pageProps} />
+
+        </main>
+      </div>
+      </SessionProvider>
+        </WagmiConfig>
+
   );
 }
 

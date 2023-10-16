@@ -30,7 +30,8 @@ export default NextAuth({
         var accpt_res = await hydraAdmin.acceptOAuth2LoginRequest({loginChallenge: login_challenge, acceptOAuth2LoginRequest: {'subject': address, remember: true,}});
       }
       catch (error) {
-        console.log(error.message);
+        //console.log(error);
+        //console.log(error.message);
         console.log("Subject: ",address);
       }
       
