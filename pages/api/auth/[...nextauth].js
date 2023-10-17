@@ -19,19 +19,23 @@ export default NextAuth({
       return session;
     },
 
+    // signIn callback.
+    // This executes upon successful signIn on the login page
+    // Moralis Verify EVM Challenge returns a 'user' object complete
+    // with the unique address the user is using. We ignore 'profile' in
+    // this response.
     async signIn(user, account, profile){
       console.log("NextAuth signIn Callback");
 
-      let payload = JSON.parse(user.user.payload);
-      let login_challenge = payload.login_challenge;
-      let address = user.user.address;
+      // parse payload for login_challenge
+      const payload = JSON.parse(user.user.payload);
+      const login_challenge = payload.login_challenge;
 
       try {
-        var accpt_res = await hydraAdmin.acceptOAuth2LoginRequest({loginChallenge: login_challenge, acceptOAuth2LoginRequest: {'subject': address, remember: true,}});
+        var accpt_res = await hydraAdmin.acceptOAuth2LoginRequest({loginChallenge: login_challenge, acceptOAuth2LoginRequest: {'subject': user.user.address, remember: true,}});
       }
       catch (error) {
-        //console.log(error);
-        //console.log(error.message);
+        console.log(error.message);
         console.log("Subject: ",address);
       }
       

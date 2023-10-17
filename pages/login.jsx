@@ -3,8 +3,9 @@ import { useAccount, useConnect, useSignMessage, useDisconnect } from "wagmi";
 // Moralis API
 import { useAuthRequestChallengeEvm } from "@moralisweb3/next";
 // NextJS helpers
-import { getSession, signIn } from "next-auth/react";
+import { signIn } from "next-auth/react";
 import { useRouter } from "next/router";
+import { useEffect, useState } from 'react';
 // Hydra OAuth2 Config
 import { hydraAdmin } from '../src/hydra_config.ts';
 
@@ -42,7 +43,7 @@ function SignIn({ login_challenge }) {
       callbackUrl: "/user",
       payload: JSON.stringify({login_challenge: login_challenge}),
     };
-    var callback = await signIn("moralis-auth", options);
+    const callback = await signIn("moralis-auth", options);
     
     if(callback){
       push(callback.url);
@@ -51,16 +52,32 @@ function SignIn({ login_challenge }) {
       console.log("Failed to sign-in");
     }
   }
-  
-  
+
+  // This is a workaround for hydration errors caused by how we're displaying the 
+  // connector options via connectors.map().
+  // Essentially we just delay rendering slightly.
+  const [hydrated, setHydrated] = useState(false);
+  useEffect(() => {
+		// This forces a rerender, so the value is rendered
+		// the second time but not the first
+		setHydrated(true);
+	}, []);
+	if (!hydrated) {
+		// Returns null on first render, so the client and server match
+		return null;
+	}
 
   return (
-    <>
-        <h3>Choose a wallet to login with</h3>
-        <div className="container left-align">
-  
+    
+    <div className="card text-bg-dark d-flex mx-auto" style={{width: 18+'rem'}}>
+      <img className="card-img-top" src="/" alt="image cap" />
+      <div className="card-body">
+        <h5 className="card-title"><u>Wallet Login</u></h5>
+        <p className="card-text">Login with your crypto wallet.</p>
         {connectors.map((connector) => (
-          <button type="button" className="btn btn-outline-secondary btn-lg btn-block"
+          // use this div to help us style the buttons
+          <div className="w-100">
+          <button type="button" className="btn btn-outline-secondary btn-lg w-100"
             disabled={!connector.ready}
             key={connector.id}
             onClick={() => connectorLogin({connector})}
@@ -71,20 +88,18 @@ function SignIn({ login_challenge }) {
               connector.id === pendingConnector?.id &&
               ' (connecting)'}
           </button>
-          
+          </div>
         ))}
-        </div>
- 
-        {error && <div>{error.message}</div>}
-
-
-    </>
+      </div>
+      {error && <div>{error.message}</div>}
+    </div>
   );
 }
 
 export const getServerSideProps = (async (context) => {
   const {login_challenge, message, signature} = context.query;
 
+  // return nothing if we don't get a good login_challenge
   try {
     const login_req = await hydraAdmin.getOAuth2LoginRequest({loginChallenge: login_challenge});
   }

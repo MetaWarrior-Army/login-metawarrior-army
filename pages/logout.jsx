@@ -2,6 +2,7 @@
 import { hydraAdmin } from '../src/hydra_config.ts';
 
 function Logout({logout_challenge, redirect_to}) {
+  // the user should never see this, we're currently redirecting in getServerSideProps()
   return (
   <div><h1>Logout</h1></div>
   );
@@ -12,10 +13,11 @@ export const getServerSideProps = (async (context) => {
 
   // get the logout request
   try {
-    const login_req = await hydraAdmin.getOAuth2LogoutRequest({logoutChallenge: logout_challenge});
-    console.log(login_req);
+    const logout_req = await hydraAdmin.getOAuth2LogoutRequest({logoutChallenge: logout_challenge});
+    //console.log(logout_req);
   }
   catch (error){
+    // Whoops
     console.log(error);
     return {props: {}};
   }
@@ -31,14 +33,11 @@ export const getServerSideProps = (async (context) => {
         }
       };
     }
-    
   }
   catch(error){
     console.log(error);
     return {props: {}};
   }
-  
-  return {props: {logout_challenge, redirect_to }};  
 
 });
 
