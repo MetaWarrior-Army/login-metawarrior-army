@@ -1,24 +1,24 @@
 // Hydra Admin connection
 import { hydraAdmin } from '../src/hydra_config.ts';
 
-function Consent({ consent_challenge, client_id, client_name, requested_scope }) {
+function Consent({ consent_challenge, client_id, client_name, client_logo, requested_scope }) {
   
   return (
       <form action={"/consent?consent_challenge="+consent_challenge} method="GET">
         <div className="form-group">
         <input type="hidden" name="consent_challenge" value={consent_challenge}></input>
         
-        <div className="card text-bg-dark d-flex mx-auto" style={{width: 18+'rem'}}>
-          <img className="card-img-top" src="/" alt="image cap" />
+        <div className="card text-bg-dark d-flex mx-auto" style={{width: 30+'rem'}}>
+          <img className="rounded w-25 mx-auto" src={client_logo} alt="image cap" />
           <div className="card-body">
             <h5 className="card-title">Consent to Access</h5>
-            <p className="card-text">Hi <u>{client_name}</u> wants access to the following resources on your behalf.</p>
+            <p className="card-text">Hi! <u>{client_name}</u> wants access to the following resources on your behalf.</p>
 
             {requested_scope.map(scope => (
               <div>
-              <label htmlFor={scope} id="label-{scope}" className="form-check-label p-2">
-                <input type="checkbox" className="grant_scope form-check-input" id={scope} value={scope} name="grant_scope"></input>
-                {scope}
+              <label htmlFor={scope} id="label-{scope}" className="form-check-label p-3">
+                <input type="checkbox" className="grant_scope form-check-input" id={scope} value={scope} name="grant_scope" defaultChecked={'checked'}/>
+                {'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{scope}
               </label>
               </div>
             ))}
@@ -75,6 +75,8 @@ export const getServerSideProps = (async (context) => {
           consentChallenge: consent_challenge, 
           acceptOAuth2ConsentRequest: {
             grant_scope: grant_scopeArr,
+            remember: true,
+            remember_for: 3600,
             session: session,
           }
         });
@@ -98,12 +100,50 @@ export const getServerSideProps = (async (context) => {
   // Get the Consent Request
   try {
     const consent_req = await hydraAdmin.getOAuth2ConsentRequest({consentChallenge: consent_challenge});
+    
+    // Skip if already authorized
+    if(consent_req.data.skip){
 
+      // Build session
+      const session = {
+        access_token: {
+          username: 'test',
+          usersecret: 'test_secret'
+        },
+        id_token: {
+          username: 'test'
+        }
+      };
+
+      // accept on OAuth server
+      const accept_req = await hydraAdmin.acceptOAuth2ConsentRequest({
+        consentChallenge: consent_challenge, 
+        acceptOAuth2ConsentRequest: {
+          grant_scope: consent_req.data.requested_scope,
+          remember: true,
+          remember_for: 3600,
+          session: session,
+        }
+      });
+      // redirect user back to client
+      if(accept_req.data.redirect_to){
+        return {
+          redirect: {
+            destination: accept_req.data.redirect_to,
+            permanent: false,
+          }
+        };
+      }
+
+    }
+
+    // User needs to consent
     // Set serverside props
     const client_id = consent_req.data.client.client_id;
     const client_name = consent_req.data.client.client_name;
+    const client_logo = consent_req.data.client.logo_uri;
     const requested_scope = consent_req.data.requested_scope;
-    return {props: {consent_challenge, client_id, client_name, requested_scope }}; 
+    return {props: {consent_challenge, client_id, client_name, client_logo, requested_scope }}; 
   }
   catch (error){
     console.log(error);

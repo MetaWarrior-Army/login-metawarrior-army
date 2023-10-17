@@ -10,7 +10,7 @@ import { useEffect, useState } from 'react';
 import { hydraAdmin } from '../src/hydra_config.ts';
 
 // SignIn Page
-function SignIn({ login_challenge }) {
+function SignIn({ login_challenge, client }) {
   const { connectAsync, connect, connectors, error, isLoading, pendingConnector } = useConnect();
   const { disconnectAsync } = useDisconnect();
   const { isConnected } = useAccount();
@@ -69,14 +69,15 @@ function SignIn({ login_challenge }) {
 
   return (
     
-    <div className="card text-bg-dark d-flex mx-auto" style={{width: 18+'rem'}}>
-      <img className="card-img-top" src="/" alt="image cap" />
+    <div className="card text-bg-dark d-flex mx-auto" style={{width: 30+'rem'}}>
+      <img className="rounded w-25 mx-auto" src={client.logo_uri} alt="image cap"/>
       <div className="card-body">
         <h5 className="card-title"><u>Wallet Login</u></h5>
         <p className="card-text">Login with your crypto wallet.</p>
         {connectors.map((connector) => (
           // use this div to help us style the buttons
           <div className="w-100">
+            
           <button type="button" className="btn btn-outline-secondary btn-lg w-100"
             disabled={!connector.ready}
             key={connector.id}
@@ -88,6 +89,7 @@ function SignIn({ login_challenge }) {
               connector.id === pendingConnector?.id &&
               ' (connecting)'}
           </button>
+           
           </div>
         ))}
       </div>
@@ -102,13 +104,36 @@ export const getServerSideProps = (async (context) => {
   // return nothing if we don't get a good login_challenge
   try {
     const login_req = await hydraAdmin.getOAuth2LoginRequest({loginChallenge: login_challenge});
+    const client = login_req.data.client;
+    // Skip login if client is already logged in!
+    if(login_req.data.skip){
+      var accpt_req = await hydraAdmin.acceptOAuth2LoginRequest({loginChallenge: login_challenge, acceptOAuth2LoginRequest: {'subject': login_req.data.subject, remember: true, remember_for: 3600,}});
+      if(accpt_req.data.redirect_to){
+        return {
+          redirect: {
+            destination: accpt_req.data.redirect_to,
+            permanent: false,
+          }
+        };
+      }
+      else{
+        console.log("Undefined redirect post accept login request.");
+      }
+
+
+      return {props: {login_challenge, client}};
+    }
+    else{
+      return {props: {login_challenge, client}};
+    }
+    
   }
   catch (error){
     console.log(error);
     return {props: {}};
   }
 
-  return {props: {login_challenge}};  
+  //return {props: {login_challenge}};  
 
 });
 

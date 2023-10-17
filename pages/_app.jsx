@@ -46,7 +46,7 @@ const config = createConfig({
     new InjectedConnector({
       chains,
       options: {
-        name: 'Injected',
+        name: 'Browser Injected Wallet',
         shimDisconnect: true,
       },
     }),
