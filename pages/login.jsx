@@ -68,7 +68,7 @@ function SignIn({ login_challenge, client }) {
 	}
 
   return (
-    
+    <>
     <div className="card text-bg-dark d-flex mx-auto" style={{width: 30+'rem'}}>
       <img className="rounded w-25 mx-auto" src={client.logo_uri} alt="image cap"/>
       <div className="card-body">
@@ -92,19 +92,36 @@ function SignIn({ login_challenge, client }) {
            
           </div>
         ))}
+        <br></br>
+        <h3><a href={"/login?login_challenge="+login_challenge+"&reject=true"} className="link-light">Back to MetaWarrior Army</a></h3>
       </div>
       {error && <div>{error.message}</div>}
     </div>
+    </>
   );
 }
 
 export const getServerSideProps = (async (context) => {
-  const {login_challenge, message, signature} = context.query;
+  const {login_challenge, message, signature, reject} = context.query;
 
   // return nothing if we don't get a good login_challenge
   try {
     const login_req = await hydraAdmin.getOAuth2LoginRequest({loginChallenge: login_challenge});
     const client = login_req.data.client;
+    // First check for reject
+    if(reject == 'true'){
+      const rej_req = await hydraAdmin.rejectOAuth2LoginRequest({loginChallenge: login_challenge});
+      console.log(rej_req);
+      if(rej_req.data.redirect_to){
+        return {
+          redirect: {
+            destination: rej_req.data.redirect_to,
+            permanent: false,
+          }
+        };
+      }
+    }
+
     // Skip login if client is already logged in!
     if(login_req.data.skip){
       var accpt_req = await hydraAdmin.acceptOAuth2LoginRequest({loginChallenge: login_challenge, acceptOAuth2LoginRequest: {'subject': login_req.data.subject, remember: true, remember_for: 3600,}});
@@ -132,8 +149,6 @@ export const getServerSideProps = (async (context) => {
     console.log(error);
     return {props: {}};
   }
-
-  //return {props: {login_challenge}};  
 
 });
 

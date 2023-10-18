@@ -26,10 +26,6 @@ function Consent({ consent_challenge, client_id, client_name, client_logo, reque
 
             <br></br>
             
-            <label htmlFor="remember" className="form-check-label p-3">
-              <input type="checkbox" className="form-check-input" id="remember" name="remember" value="1" disabled></input>
-              Don't ask me again
-            </label>
             
             <br></br>
 
@@ -92,6 +88,29 @@ export const getServerSideProps = (async (context) => {
       }
       catch(error){
         console.log(error);
+      }
+    }
+    // User denied access
+    else if(submit == 'Deny access'){
+      try{
+        // reject
+        const rej_req = await hydraAdmin.rejectOAuth2ConsentRequest({
+          consentChallenge: consent_challenge,
+        });
+        console.log(rej_req);
+        // redirect user
+        if(rej_req.data.redirect_to){
+          return {
+            redirect: {
+              destination: rej_req.data.redirect_to,
+              permanent: false,
+            }
+          };
+        }
+
+      }
+      catch(error){
+        console.log(error.message);
       }
     }
 
