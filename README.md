@@ -78,8 +78,12 @@ You'll need to create a client and client application to interact with the OAuth
 
 if `npm run dev` works and you've tested it. Feel free to `npm run build` and `npm run start` to compile and run.
 
+![screenshot](https://github.com/MetaWarrior-Army/login-metawarrior-army/blob/2941ed7533ff83524189edbb2dea918b8b171091/github/pics/login_oauth.png)
 
-![screenshot](https://github.com/MetaWarrior-Army/login-metawarrior-army/blob/2941ed7533ff83524189edbb2dea918b8b171091/github/pics/login_mwa.png)
+![screenshot](https://github.com/MetaWarrior-Army/login-metawarrior-army/blob/2941ed7533ff83524189edbb2dea918b8b171091/github/pics/wc_oauth2.png)
+
+![screenshot](https://github.com/MetaWarrior-Army/login-metawarrior-army/blob/2941ed7533ff83524189edbb2dea918b8b171091/github/pics/consent_oauth.png)
+
 
 # References
 - https://docs.moralis.io/web3-data-api/evm/quickstart-nextjs
