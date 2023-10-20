@@ -1,9 +1,18 @@
 // Hydra Admin connection
 import { hydraAdmin } from '../src/hydra_config.ts';
+// NextJS Helpers
+import  Head  from "next/head";
 
 function Consent({ consent_challenge, client_id, client_name, client_logo, requested_scope }) {
+
+const page_title = "Authorize access to "+client_name;
   
   return (
+    <>
+    <Head>
+      <title>{page_title}</title>
+      <meta name="viewport" content="width=device-width, initial-scale=1"></meta>
+    </Head>
       <form action={"/consent?consent_challenge="+consent_challenge} method="GET">
         <div className="form-group">
         <input type="hidden" name="consent_challenge" value={consent_challenge}></input>
@@ -15,18 +24,15 @@ function Consent({ consent_challenge, client_id, client_name, client_logo, reque
             <p className="card-text">Hi! <u>{client_name}</u> wants access to the following resources on your behalf.</p>
 
             {requested_scope.map(scope => (
-              <div>
-              <label htmlFor={scope} id="label-{scope}" className="form-check-label p-3">
-                <input type="checkbox" className="grant_scope form-check-input" id={scope} value={scope} name="grant_scope" defaultChecked={'checked'}/>
+              <div key={scope.id}>
+              <label key={scope.id} htmlFor={scope} id="label-{scope}" className="form-check-label p-3">
+                <input key={scope.id} type="checkbox" className="grant_scope form-check-input" id={scope} value={scope} name="grant_scope" defaultChecked={'checked'}/>
                 {'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{scope}
               </label>
               </div>
             ))}
 
-
             <br></br>
-            
-            
             <br></br>
 
             <input type="submit" className="btn btn-outline-secondary btn-lg w-100" id="accept" name="submit" value="Allow access"></input>
@@ -35,7 +41,8 @@ function Consent({ consent_challenge, client_id, client_name, client_logo, reque
         </div>
 
       </div>
-      </form>    
+      </form>   
+      </> 
   );
 }
 
@@ -53,13 +60,16 @@ export const getServerSideProps = (async (context) => {
   
   // is the user submiting a response?
   if(submit){
+
+    // BUILD SESSION META HERE
     const session = {
       access_token: {
-        username: 'test',
-        usersecret: 'test_secret'
+        username: process.env.TEST,
+        using: 'access_token',
       },
       id_token: {
-        username: 'test'
+        username: process.env.TEST,
+        using: 'id_token',
       }
     };
 
@@ -123,14 +133,15 @@ export const getServerSideProps = (async (context) => {
     // Skip if already authorized
     if(consent_req.data.skip){
 
-      // Build session
+      // BUILD SESSION META HERE
       const session = {
         access_token: {
           username: 'test',
-          usersecret: 'test_secret'
+          using: 'access_token',
         },
         id_token: {
-          username: 'test'
+          username: 'test',
+          using: 'id_token'
         }
       };
 

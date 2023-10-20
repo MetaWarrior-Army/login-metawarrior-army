@@ -24,7 +24,7 @@ export default NextAuth({
     // Moralis Verify EVM Challenge returns a 'user' object complete
     // with the unique address the user is using. We ignore 'profile' in
     // this response.
-    async signIn(user, account, profile){
+    async signIn(user){
       console.log("NextAuth signIn Callback");
 
       // parse payload for login_challenge

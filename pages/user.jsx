@@ -1,3 +1,4 @@
+// You can use this for inspecting the session
 import { getSession, signOut } from "next-auth/react";
 
 // gets a prop from getServerSideProps

@@ -17,7 +17,7 @@ export const getServerSideProps = (async (context) => {
     //console.log(logout_req);
   }
   catch (error){
-    // Whoops
+    // Whoops, must be a bad login_challenge
     console.log(error);
     return {props: {}};
   }

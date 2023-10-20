@@ -15,15 +15,17 @@ import { mainnet, polygon } from "wagmi/chains";
 
 // Next Auth Session Control
 import { SessionProvider } from "next-auth/react";
-import  Head  from "next/head";
 
 // Global CSS
 import './css/global.css';
 
+// PROJECT CONFIG
+import { project } from '../src/config.jsx';
+
 // Configure chains
 const { chains, publicClient, webSocketPublicClient } = configureChains(
   [polygon],
-  [infuraProvider({ apiKey: process.env.INFURA_API_KEY }), publicProvider()]
+  [infuraProvider({ apiKey: project.INFURA_API_KEY }), publicProvider()]
 );
 
 // Setup Web3 connectors
@@ -40,7 +42,7 @@ const config = createConfig({
     new WalletConnectConnector({
       chains,
       options: {
-        projectId: '9086ac4b5133bcee5f2c6fff7ef9082a',
+        projectId: project.WALLETCONNECT_PROJECTID,
       },
     }),
     new InjectedConnector({
@@ -58,18 +60,11 @@ const config = createConfig({
 function MyApp({ Component, pageProps }) {
   return (
     <>
-    <Head>
-      <title>Authorize Access to MetaWarrior Army</title>
-      <meta name="viewport" content="width=device-width, initial-scale=1"></meta>
-      <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9" crossorigin="anonymous"/>
-    </Head>
-
-        <WagmiConfig config={config}>
-          <SessionProvider session={pageProps.session} refetchInterval={0}>
-            <Component {...pageProps} />
-          </SessionProvider>
-        </WagmiConfig>
-
+      <WagmiConfig config={config}>
+        <SessionProvider session={pageProps.session} refetchInterval={0}>
+          <Component {...pageProps} />
+        </SessionProvider>
+      </WagmiConfig>
     </>
   );
 }
