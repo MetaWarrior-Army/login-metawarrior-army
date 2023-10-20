@@ -78,11 +78,11 @@ You'll need to create a client and client application to interact with the OAuth
 
 if `npm run dev` works and you've tested it. Feel free to `npm run build` and `npm run start` to compile and run.
 
-![screenshot](relative%20path/github/pics/login_oauth2.png?raw=true)
+![screenshot](https://github.com/MetaWarrior-Army/login-metawarrior-army/blob/61dc3a694c486926407704c47891f232d9d46b8c/github/pics/login_oauth2.png?raw=true)
 
-![screenshot](https://raw.githubusercontent.com/MetaWarrior-Army/login-metawarrior-army/61dc3a694c486926407704c47891f232d9d46b8c/github/pics/wc_oauth2.png  )
+![screenshot](https://github.com/MetaWarrior-Army/login-metawarrior-army/blob/61dc3a694c486926407704c47891f232d9d46b8c/github/pics/wc_oauth2.png?raw=true)
 
-![screenshot](https://github.com/MetaWarrior-Army/login-metawarrior-army/blob/61dc3a694c486926407704c47891f232d9d46b8c/github/pics/consent_oauth.png)
+![screenshot](https://github.com/MetaWarrior-Army/login-metawarrior-army/blob/61dc3a694c486926407704c47891f232d9d46b8c/github/pics/consent_oauth.png?raw=true)
 
 
 # References
