@@ -1,6 +1,10 @@
 # login-metawarrior-army
 A web3 authentication application backed by OAuth2 provided by Ory Hydra.
 
+We leverage Bootstrap 5.3.1 for CSS styling, Moralis for our web3 authentication environment, Infura as a backup, and @ory/hydra-client for connecting to our hydra oauth2 server.
+
+We support multiple wallets including Metamask, Coinbase, Walletconnect, and Browser Injected wallets.
+
 ## API Dependencies
 ### Ory Hydra
 Ory Hydra is the OAuth2 implementation. We access the admin interface via `127.0.0.1:4445`.
@@ -86,5 +90,13 @@ if `npm run dev` works and you've tested it. Feel free to `npm run build` and `n
 
 
 # References
+- Moralis
 - https://docs.moralis.io/web3-data-api/evm/quickstart-nextjs
 - https://docs.moralis.io/authentication-api/evm/how-to-sign-in-with-metamask
+- Ory Hydra
+- https://www.ory.sh/docs/hydra/reference/api
+- https://www.ory.sh/docs/hydra/5min-tutorial
+- NextAuth.js
+- https://next-auth.js.org/getting-started/client#signin
+
+
