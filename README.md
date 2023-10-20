@@ -1,4 +1,4 @@
-  # login-metawarrior-army
+# login-metawarrior-army
 A web3 authentication application backed by OAuth2 provided by Ory Hydra.
 
 We leverage Bootstrap 5.3.1 for CSS styling, Moralis for our web3 authentication environment, Infura as a backup, and @ory/hydra-client for connecting to our hydra oauth2 server.
