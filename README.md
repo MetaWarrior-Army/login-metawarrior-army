@@ -80,9 +80,9 @@ if `npm run dev` works and you've tested it. Feel free to `npm run build` and `n
 
 ![screenshot](https://raw.githubusercontent.com/MetaWarrior-Army/login-metawarrior-army/61dc3a694c486926407704c47891f232d9d46b8c/github/pics/login_oauth2.png)
 
-![screenshot](https://raw.githubusercontent.com/MetaWarrior-Army/login-metawarrior-army/61dc3a694c486926407704c47891f232d9d46b8c/github/pics/wc_oauth2.png)
+![screenshot](https://raw.githubusercontent.com/MetaWarrior-Army/login-metawarrior-army/61dc3a694c486926407704c47891f232d9d46b8c/github/pics/wc_oauth2.png  )
 
-![screenshot](https://raw.githubusercontent.com/MetaWarrior-Army/login-metawarrior-army/61dc3a694c486926407704c47891f232d9d46b8c/github/pics/consent_oauth.png)
+![screenshot](https://github.com/MetaWarrior-Army/login-metawarrior-army/blob/61dc3a694c486926407704c47891f232d9d46b8c/github/pics/consent_oauth.png)
 
 
 # References
