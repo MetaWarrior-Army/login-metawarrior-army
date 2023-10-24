@@ -1,5 +1,5 @@
 // Web3 helpers
-import { useAccount, useConnect, useNetwork, useSignMessage, useDisconnect, useSwitchNetwork } from "wagmi";
+import { useAccount, useConnect, useNetwork, useSignMessage, useDisconnect } from "wagmi";
 
 // Moralis API
 import { useAuthRequestChallengeEvm } from "@moralisweb3/next";
@@ -158,7 +158,7 @@ function SignIn({ login_challenge, client, page_title, project_name, project_ico
         
 
         <div id="login" hidden>
-          <p className="card-text">Continue logging in with <span className="text-info" id="address">{address}</span></p>
+          <p className="card-text">Login with address: <span className="text-info" id="address">{address}</span></p>
           <button onClick={loginButton} type="button" className="btn btn-outline-secondary btn-lg w-100">Login</button>
         </div>
 
