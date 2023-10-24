@@ -153,7 +153,7 @@ function SignIn({ login_challenge, client, page_title, project_name, project_ico
     <div className="card text-bg-dark d-flex mx-auto" style={{width: 30+'rem'}}>
       <img className="rounded w-25 mx-auto" src={client.logo_uri} alt="image cap"/>
       <div className="card-body">
-        <h5 className="card-title"><u>Login to MetaWarrior Army</u></h5>
+        <h5 className="card-title"><u>Login to {project_name}</u></h5>
         <br></br>
         
 
