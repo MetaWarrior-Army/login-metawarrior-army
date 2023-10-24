@@ -107,7 +107,7 @@ export const getServerSideProps = (async (context) => {
         const rej_req = await hydraAdmin.rejectOAuth2ConsentRequest({
           consentChallenge: consent_challenge,
         });
-        console.log(rej_req);
+        //console.log(rej_req);
         // redirect user
         if(rej_req.data.redirect_to){
           return {

@@ -1,5 +1,5 @@
 // Web3 helpers
-import { useAccount, useConnect, useSignMessage, useDisconnect } from "wagmi";
+import { useAccount, useConnect, useNetwork, useSignMessage, useDisconnect, useSwitchNetwork } from "wagmi";
 
 // Moralis API
 import { useAuthRequestChallengeEvm } from "@moralisweb3/next";
@@ -15,27 +15,96 @@ import { hydraAdmin } from '../src/hydra_config.ts';
 
 // SignIn Page
 function SignIn({ login_challenge, client, page_title, project_name, project_icon_url }) {
-  const { connectAsync, connectors, error, isLoading, pendingConnector } = useConnect();
+  const { chain } = useNetwork();
   const { disconnectAsync } = useDisconnect();
-  const { isConnected } = useAccount();
-  const { signMessageAsync } = useSignMessage();
+  const { isConnected, address } = useAccount({});
+  const { signMessageAsync } = useSignMessage({
+    onError(error) {
+      const web3_error = document.getElementById('web3_error');
+      web3_error.innerText = error.message;
+    },
+  });
   const { requestChallengeAsync } = useAuthRequestChallengeEvm();
   const { push } = useRouter();
-  
-  const connectorLogin = async ({connector}) => {
+  const { connectAsync, connectors, error, isLoading, pendingConnector } = useConnect({
+    onError(error){
+      const web3_error = document.getElementById('web3_error');
+      web3_error.innerText = error.message;
+    },
+    onSuccess(data) {
+        const web3_success = document.getElementById('web3_success');
+        const web3_error = document.getElementById('web3_error');
+        const connector_group = document.getElementById('connector_group');
+        const loginDiv = document.getElementById('login');
+        const disconnect = document.getElementById('disconnect');
+        web3_success.innerText = "Wallet connected!";
+        web3_error.innerText = "";
+        connector_group.hidden = true;
+        loginDiv.hidden = false;
+        disconnect.hidden = false;
+    }
+  });
+
+  if(isConnected){
+    try{
+      const web3_success = document.getElementById('web3_success');
+      const web3_error = document.getElementById('web3_error');
+      const connector_group = document.getElementById('connector_group');
+      const loginDiv = document.getElementById('login');
+      const disconnect = document.getElementById('disconnect');
+      web3_success.innerText = "Wallet connected!";
+      connector_group.hidden = true;
+      loginDiv.hidden = false;
+      disconnect.hidden = false;
+    }
+    catch(error){
+
+    }
+  }
+  else{
+    try{
+      const web3_success = document.getElementById('web3_success');
+      const loginDiv = document.getElementById('login');
+      web3_success.innerText = "";
+      connector_group.hidden = false;
+      loginDiv.hidden = true;;
+    }
+    catch(error){
+      //
+    }
+  }
+
+  // Connect to the user's wallet
+  //
+  //
+  const connectWallet = async ({connector}) => {
     // if connected, disconnect
     if (isConnected) {
       await disconnectAsync();
     }
 
     // get account and chain data
-    const { account, chain } = await connectAsync({connector});
+    const {account, chain} = await connectAsync({connector: connector, chainId: 137});
+  }
+  // Disconnect Wallet Button
+  const disconnectWallet = async () => {
+    await disconnectAsync();
+  }
 
-    // Request the user to login
+  // Log the user in via Moralis
+  //
+  //
+  const loginButton = async () => {
+    // reset error msg
+    const web3_error = document.getElementById('web3_error');
+    web3_error.innerText = "";
+
+    // Request a challenge message from Moralis
     const { message } = await requestChallengeAsync({
-      address: account,
+      address: address,
       chainId: chain.id,
     });
+
     // Request user sign message
     const signature = await signMessageAsync({ message });
 
@@ -47,8 +116,11 @@ function SignIn({ login_challenge, client, page_title, project_name, project_ico
       callbackUrl: "/user", // We don't actually use this
       payload: JSON.stringify({login_challenge: login_challenge}),
     };
+
+    // Send the sign-in payload to Moralis for verification
     const callback = await signIn("moralis-auth", options);
     
+    // Forward user to consent or otherwise if we get a valid response
     if(callback){
       push(callback.url);
     }
@@ -81,30 +153,45 @@ function SignIn({ login_challenge, client, page_title, project_name, project_ico
     <div className="card text-bg-dark d-flex mx-auto" style={{width: 30+'rem'}}>
       <img className="rounded w-25 mx-auto" src={client.logo_uri} alt="image cap"/>
       <div className="card-body">
-        <h5 className="card-title"><u>Wallet Login</u></h5>
-        <p className="card-text">Login with your crypto wallet.</p>
-        {connectors.map((connector) => (
-          // use this div to help us style the buttons
-          <div className="w-100">
-            
-          <button type="button" className="btn btn-outline-secondary btn-lg w-100"
-            disabled={!connector.ready}
-            key={connector.id}
-            onClick={() => connectorLogin({connector})}
-          >
-            {connector.name}
-            {!connector.ready && ' (unsupported)'}
-            {isLoading &&
-              connector.id === pendingConnector?.id &&
-              ' (connecting)'}
-          </button>
-           
-          </div>
-        ))}
+        <h5 className="card-title"><u>Login to MetaWarrior Army</u></h5>
         <br></br>
-        <h3><a href={"/login?login_challenge="+login_challenge+"&reject=true"} className="link-light">Back to {project_name}</a></h3>
+        
+
+        <div id="login" hidden>
+          <p className="card-text">Continue logging in with <span className="text-info" id="address">{address}</span></p>
+          <button onClick={loginButton} type="button" className="btn btn-outline-secondary btn-lg w-100">Login</button>
+        </div>
+
+        <div id="connector_group">
+          <h5>Connect your wallet</h5>
+          {connectors.map((connector) => (
+            // use this div to help us style the buttons
+            <div className="w-100">
+              
+            <button type="button" className="btn btn-outline-secondary btn-lg w-100"
+              disabled={!connector.ready}
+              key={connector.id}
+              onClick={() => connectWallet({connector})}
+            >
+              {connector.name}
+              {!connector.ready && ' (unsupported)'}
+              {isLoading &&
+                connector.id === pendingConnector?.id &&
+                ' (connecting)'}
+            </button>
+            
+            </div>
+          ))}
+        </div>
+        <br></br>
+        <p className="small text-danger" id="web3_error">{error && error.message}</p>
+        <p className="small text-success" id="web3_success"></p><p className="small" id="disconnect" hidden><a className="link-light" onClick={disconnectWallet} href="#">Disconnect Wallet</a></p>
+
       </div>
-      {error && <div>{error.message}</div>}
+
+      <h3><a href={"/login?login_challenge="+login_challenge+"&reject=true"} className="link-light">Back to {project_name}</a></h3>
+      <br></br>
+
     </div>
     </>
   );
