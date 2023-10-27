@@ -1,5 +1,5 @@
 // Web3 helpers
-import { useAccount, useConnect, useNetwork, useSignMessage, useDisconnect } from "wagmi";
+import { useAccount, useConnect, useNetwork, useSwitchNetwork, useSignMessage, useDisconnect } from "wagmi";
 
 // Moralis API
 import { useAuthRequestChallengeEvm } from "@moralisweb3/next";
@@ -13,9 +13,13 @@ import  Head  from "next/head";
 // Hydra OAuth2 Config
 import { hydraAdmin } from '../src/hydra_config.ts';
 
+// PROJECT CONFIG
+import { project } from '../src/config.jsx';
+
 // SignIn Page
 function SignIn({ login_challenge, client, page_title, project_name, project_icon_url }) {
   const { chain } = useNetwork();
+  const { switchNetwork } = useSwitchNetwork({ chainId: project.BLOCKCHAIN_NETWORK});
   const { disconnectAsync } = useDisconnect();
   const { isConnected, address } = useAccount({});
   const { signMessageAsync } = useSignMessage({
@@ -42,37 +46,17 @@ function SignIn({ login_challenge, client, page_title, project_name, project_ico
         connector_group.hidden = true;
         loginDiv.hidden = false;
         disconnect.hidden = false;
+
+        try{
+          if(chain.id != project.BLOCKCHAIN_NETWORK){
+            switchNetwork(project.BLOCKCHAIN_NETWORK);
+          }
+        }
+        catch(error){
+          console.log(error);
+        }
     }
   });
-
-  if(isConnected){
-    try{
-      const web3_success = document.getElementById('web3_success');
-      const web3_error = document.getElementById('web3_error');
-      const connector_group = document.getElementById('connector_group');
-      const loginDiv = document.getElementById('login');
-      const disconnect = document.getElementById('disconnect');
-      web3_success.innerText = "Wallet connected!";
-      connector_group.hidden = true;
-      loginDiv.hidden = false;
-      disconnect.hidden = false;
-    }
-    catch(error){
-
-    }
-  }
-  else{
-    try{
-      const web3_success = document.getElementById('web3_success');
-      const loginDiv = document.getElementById('login');
-      web3_success.innerText = "";
-      connector_group.hidden = false;
-      loginDiv.hidden = true;;
-    }
-    catch(error){
-      //
-    }
-  }
 
   // Connect to the user's wallet
   //
@@ -82,13 +66,14 @@ function SignIn({ login_challenge, client, page_title, project_name, project_ico
     if (isConnected) {
       await disconnectAsync();
     }
-
     // get account and chain data
-    const {account, chain} = await connectAsync({connector: connector, chainId: 137});
+    const {account, chain} = await connectAsync({connector: connector, chainId: project.BLOCKCHAIN_NETWORK});
+    return true;
   }
   // Disconnect Wallet Button
   const disconnectWallet = async () => {
     await disconnectAsync();
+    return true;
   }
 
   // Log the user in via Moralis
@@ -127,6 +112,39 @@ function SignIn({ login_challenge, client, page_title, project_name, project_ico
     else {
       console.log("Failed to sign-in");
     }
+    return true;
+  }
+
+  // UPDATE UI
+  if(isConnected){
+    try{
+      const web3_success = document.getElementById('web3_success');
+      const web3_error = document.getElementById('web3_error');
+      const connector_group = document.getElementById('connector_group');
+      const loginDiv = document.getElementById('login');
+      const disconnect = document.getElementById('disconnect');
+      web3_success.innerText = "Wallet connected!";
+      connector_group.hidden = true;
+      loginDiv.hidden = false;
+      disconnect.hidden = false;
+    }
+    catch(error){
+      //
+    }
+  }
+  else{
+    try{
+      const web3_success = document.getElementById('web3_success');
+      const loginDiv = document.getElementById('login');
+      const disconnect = document.getElementById('disconnect');
+      web3_success.innerText = "";
+      connector_group.hidden = false;
+      loginDiv.hidden = true;
+      disconnect.hidden = true;
+    }
+    catch(error){
+      //
+    }
   }
 
   // This is a workaround for hydration errors caused by how we're displaying the 
@@ -159,7 +177,7 @@ function SignIn({ login_challenge, client, page_title, project_name, project_ico
 
         <div id="login" hidden>
           <p className="card-text">Login with address: <span className="text-info" id="address">{address}</span></p>
-          <button onClick={loginButton} type="button" className="btn btn-outline-secondary btn-lg w-100">Login</button>
+          <button onClick={() => loginButton()} type="button" className="btn btn-outline-secondary btn-lg w-100">Login</button>
         </div>
 
         <div id="connector_group">
@@ -185,7 +203,7 @@ function SignIn({ login_challenge, client, page_title, project_name, project_ico
         </div>
         <br></br>
         <p className="small text-danger" id="web3_error">{error && error.message}</p>
-        <p className="small text-success" id="web3_success"></p><p className="small" id="disconnect" hidden><a className="link-light" onClick={disconnectWallet} href="#">Disconnect Wallet</a></p>
+        <p className="small text-success" id="web3_success"></p><p className="small" id="disconnect" hidden><a className="link-light" onClick={() => disconnectWallet()} href="#">Disconnect Wallet</a></p>
 
       </div>
 
