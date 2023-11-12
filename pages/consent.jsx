@@ -1,9 +1,13 @@
 // Hydra Admin connection
 import { hydraAdmin } from '../src/hydra_config.ts';
 // NextJS Helpers
-import  Head  from "next/head";
+import  Head from "next/head";
 
-function Consent({ consent_challenge, client_id, client_name, client_logo, requested_scope }) {
+import axios from 'axios';
+
+
+function Consent({ consent_challenge, client_id, client_name, client_logo, requested_scope, session }) {
+ 
 
 const page_title = "Authorize access to "+client_name;
   
@@ -58,20 +62,76 @@ export const getServerSideProps = (async (context) => {
     var grant_scopeArr = grant_scope;
   }
   
-  // is the user submiting a response?
-  if(submit){
+  // Get the Consent Request
+  try {
+    const consent_req = await hydraAdmin.getOAuth2ConsentRequest({consentChallenge: consent_challenge});
+    //console.log(consent_req.data.subject);
+
+    const datam = {address: consent_req.data.subject};
+    var user;
+    // Create the IPFS url
+
+    await axios.post('https://auth.metawarrior.army/api/db', datam)
+      .then((response) =>{
+        //console.log(response)
+        user = response.data;
+      });
+
+    console.log(user);
+    const userStr = JSON.stringify(user);
 
     // BUILD SESSION META HERE
     const session = {
       access_token: {
-        username: process.env.TEST,
+        user: userStr,
+        address: consent_req.data.subject,
         using: 'access_token',
       },
       id_token: {
-        username: process.env.TEST,
+        user: userStr,
         using: 'id_token',
       }
     };
+    
+    // Skip if already authorized
+    if(consent_req.data.skip){
+
+      // BUILD SESSION META HERE
+      const session = {
+        access_token: {
+          username: 'test',
+          using: 'access_token',
+        },
+        id_token: {
+          username: 'test',
+          using: 'id_token'
+        }
+      };
+
+      // accept on OAuth server
+      const accept_req = await hydraAdmin.acceptOAuth2ConsentRequest({
+        consentChallenge: consent_challenge, 
+        acceptOAuth2ConsentRequest: {
+          grant_scope: consent_req.data.requested_scope,
+          remember: true,
+          remember_for: 3600,
+          session: session,
+        }
+      });
+      // redirect user back to client
+      if(accept_req.data.redirect_to){
+        return {
+          redirect: {
+            destination: accept_req.data.redirect_to,
+            permanent: false,
+          }
+        };
+      }
+
+    }
+
+    // is the user submiting a response?
+  if(submit){
 
     // Is the user allowing access?
     if(submit == 'Allow access'){
@@ -125,47 +185,6 @@ export const getServerSideProps = (async (context) => {
     }
 
   }
-
-  // Get the Consent Request
-  try {
-    const consent_req = await hydraAdmin.getOAuth2ConsentRequest({consentChallenge: consent_challenge});
-    
-    // Skip if already authorized
-    if(consent_req.data.skip){
-
-      // BUILD SESSION META HERE
-      const session = {
-        access_token: {
-          username: 'test',
-          using: 'access_token',
-        },
-        id_token: {
-          username: 'test',
-          using: 'id_token'
-        }
-      };
-
-      // accept on OAuth server
-      const accept_req = await hydraAdmin.acceptOAuth2ConsentRequest({
-        consentChallenge: consent_challenge, 
-        acceptOAuth2ConsentRequest: {
-          grant_scope: consent_req.data.requested_scope,
-          remember: true,
-          remember_for: 3600,
-          session: session,
-        }
-      });
-      // redirect user back to client
-      if(accept_req.data.redirect_to){
-        return {
-          redirect: {
-            destination: accept_req.data.redirect_to,
-            permanent: false,
-          }
-        };
-      }
-
-    }
 
     // User needs to consent
     // Set serverside props
