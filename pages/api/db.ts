@@ -24,12 +24,14 @@ export default async function handler(
     } catch ( error ) {
         console.log( error );
         res.status(500).json({message: error});
+        return;
     }
 
     // Do we have results? If so, return the user object
     if(search.rowCount > 0){
         //console.log("FOUND RESULT");
         res.status(200).json(search.rows[0]);
+        return;
     }
     // No results, create initial entry in DB
     else{
@@ -42,7 +44,30 @@ export default async function handler(
             res.status(500).json({message: error});
             return;
         }
+
+        // Now grab that DB entry
+        try{
+            const search_q = 'SELECT * FROM users WHERE address=\''+address+'\'';
+            const search_r = await conn.query(search_q);
+            search = search_r;
+        }
+        catch(error){
+            console.log(error);
+            res.status(500).json({message: error});
+            return;
+        }
+        if(search.rowCount > 0){
+            res.status(200).json(search.rows[0]);
+            return;
+        }
+        else{
+            console.log("Failed to find entry after insert.");
+            res.status(500).json({message: 'Failed to find entry after insert.'});
+            return;
+        }
         
-        res.status(200).json({address: address});
     }
+    
+    res.status(200).json({message: address});
+    return;
 };
