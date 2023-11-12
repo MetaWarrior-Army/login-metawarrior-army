@@ -2,7 +2,7 @@
 import { hydraAdmin } from '../src/hydra_config.ts';
 // NextJS Helpers
 import  Head from "next/head";
-
+// Axios for db query
 import axios from 'axios';
 
 
@@ -77,37 +77,23 @@ export const getServerSideProps = (async (context) => {
         user = response.data;
       });
 
-    console.log(user);
-    const userStr = JSON.stringify(user);
+    //console.log(user);
 
     // BUILD SESSION META HERE
     const session = {
       access_token: {
-        user: userStr,
+        user: JSON.stringify(user),
         address: consent_req.data.subject,
         using: 'access_token',
       },
       id_token: {
-        user: userStr,
+        user: JSON.stringify(user),
         using: 'id_token',
       }
     };
     
     // Skip if already authorized
     if(consent_req.data.skip){
-
-      // BUILD SESSION META HERE
-      const session = {
-        access_token: {
-          username: 'test',
-          using: 'access_token',
-        },
-        id_token: {
-          username: 'test',
-          using: 'id_token'
-        }
-      };
-
       // accept on OAuth server
       const accept_req = await hydraAdmin.acceptOAuth2ConsentRequest({
         consentChallenge: consent_challenge, 
@@ -127,66 +113,61 @@ export const getServerSideProps = (async (context) => {
           }
         };
       }
-
     }
 
     // is the user submiting a response?
-  if(submit){
-
-    // Is the user allowing access?
-    if(submit == 'Allow access'){
-      try{
-        // accept on OAuth server
-        const accept_req = await hydraAdmin.acceptOAuth2ConsentRequest({
-          consentChallenge: consent_challenge, 
-          acceptOAuth2ConsentRequest: {
-            grant_scope: grant_scopeArr,
-            remember: true,
-            remember_for: 3600,
-            session: session,
+    if(submit){
+      // Is the user allowing access?
+      if(submit == 'Allow access'){
+        try{
+          // accept on OAuth server
+          const accept_req = await hydraAdmin.acceptOAuth2ConsentRequest({
+            consentChallenge: consent_challenge, 
+            acceptOAuth2ConsentRequest: {
+              grant_scope: grant_scopeArr,
+              remember: true,
+              remember_for: 3600,
+              session: session,
+            }
+          });
+          // redirect user back to client
+          if(accept_req.data.redirect_to){
+            return {
+              redirect: {
+                destination: accept_req.data.redirect_to,
+                permanent: false,
+              }
+            };
           }
-        });
-        // redirect user back to client
-        if(accept_req.data.redirect_to){
-          return {
-            redirect: {
-              destination: accept_req.data.redirect_to,
-              permanent: false,
-            }
-          };
+        }
+        catch(error){
+          console.log(error);
         }
       }
-      catch(error){
-        console.log(error);
-      }
-    }
-    // User denied access
-    else if(submit == 'Deny access'){
-      try{
-        // reject
-        const rej_req = await hydraAdmin.rejectOAuth2ConsentRequest({
-          consentChallenge: consent_challenge,
-        });
-        //console.log(rej_req);
-        // redirect user
-        if(rej_req.data.redirect_to){
-          return {
-            redirect: {
-              destination: rej_req.data.redirect_to,
-              permanent: false,
-            }
-          };
+      // User denied access
+      else if(submit == 'Deny access'){
+        try{
+          // reject
+          const rej_req = await hydraAdmin.rejectOAuth2ConsentRequest({
+            consentChallenge: consent_challenge,
+          });
+          // redirect user
+          if(rej_req.data.redirect_to){
+            return {
+              redirect: {
+                destination: rej_req.data.redirect_to,
+                permanent: false,
+              }
+            };
+          }
         }
-
-      }
-      catch(error){
-        console.log(error.message);
+        catch(error){
+          console.log(error.message);
+        }
       }
     }
 
-  }
-
-    // User needs to consent
+    // User still needs to consent at this point
     // Set serverside props
     const client_id = consent_req.data.client.client_id;
     const client_name = consent_req.data.client.client_name;
@@ -198,7 +179,6 @@ export const getServerSideProps = (async (context) => {
     console.log(error);
     return {props: {consent_challenge}}; 
   }
-
 });
 
 export default Consent;

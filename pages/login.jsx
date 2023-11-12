@@ -184,7 +184,7 @@ function SignIn({ login_challenge, client, page_title, project_name, project_ico
           <h5>Connect your wallet</h5>
           {connectors.map((connector) => (
             // use this div to help us style the buttons
-            <div className="w-100">
+            <div className="w-100" key={connector.id}>
               
             <button type="button" className="btn btn-outline-secondary btn-lg w-100"
               disabled={!connector.ready}
