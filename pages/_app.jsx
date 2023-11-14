@@ -11,7 +11,7 @@ import { InjectedConnector } from 'wagmi/connectors/injected'
 import { publicProvider } from "wagmi/providers/public";
 import { infuraProvider } from 'wagmi/providers/infura';
 // chains
-import { mainnet, polygon } from "wagmi/chains";
+import { mainnet, polygon, polygonZkEvm } from "wagmi/chains";
 
 // Next Auth Session Control
 import { SessionProvider } from "next-auth/react";
@@ -24,7 +24,7 @@ import { project } from '../src/config.jsx';
 
 // Configure chains
 const { chains, publicClient, webSocketPublicClient } = configureChains(
-  [polygon],
+  [mainnet, polygon, polygonZkEvm],
   [infuraProvider({ apiKey: project.INFURA_API_KEY }), publicProvider()]
 );
 

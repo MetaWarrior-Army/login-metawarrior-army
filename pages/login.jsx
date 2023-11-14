@@ -9,6 +9,7 @@ import { signIn } from "next-auth/react";
 import { useRouter } from "next/router";
 import { useEffect, useState } from 'react';
 import  Head  from "next/head";
+import Script from "next/script";
 
 // Hydra OAuth2 Config
 import { hydraAdmin } from '../src/hydra_config.ts';
@@ -38,14 +39,9 @@ function SignIn({ login_challenge, client, page_title, project_name, project_ico
     onSuccess(data) {
         const web3_success = document.getElementById('web3_success');
         const web3_error = document.getElementById('web3_error');
-        const connector_group = document.getElementById('connector_group');
-        const loginDiv = document.getElementById('login');
-        const disconnect = document.getElementById('disconnect');
         web3_success.innerText = "Wallet connected!";
         web3_error.innerText = "";
-        connector_group.hidden = true;
-        loginDiv.hidden = false;
-        disconnect.hidden = false;
+        jdenticon.update('#avatar',address);
 
         try{
           if(chain.id != project.BLOCKCHAIN_NETWORK){
@@ -115,38 +111,6 @@ function SignIn({ login_challenge, client, page_title, project_name, project_ico
     return true;
   }
 
-  // UPDATE UI
-  if(isConnected){
-    try{
-      const web3_success = document.getElementById('web3_success');
-      const web3_error = document.getElementById('web3_error');
-      const connector_group = document.getElementById('connector_group');
-      const loginDiv = document.getElementById('login');
-      const disconnect = document.getElementById('disconnect');
-      web3_success.innerText = "Wallet connected!";
-      connector_group.hidden = true;
-      loginDiv.hidden = false;
-      disconnect.hidden = false;
-    }
-    catch(error){
-      //
-    }
-  }
-  else{
-    try{
-      const web3_success = document.getElementById('web3_success');
-      const loginDiv = document.getElementById('login');
-      const disconnect = document.getElementById('disconnect');
-      web3_success.innerText = "";
-      connector_group.hidden = false;
-      loginDiv.hidden = true;
-      disconnect.hidden = true;
-    }
-    catch(error){
-      //
-    }
-  }
-
   // This is a workaround for hydration errors caused by how we're displaying the 
   // connector options via connectors.map().
   // Essentially we just delay rendering slightly.
@@ -163,6 +127,8 @@ function SignIn({ login_challenge, client, page_title, project_name, project_ico
 
   return (
     <>
+    <Script src="https://cdn.jsdelivr.net/npm/jdenticon@3.2.0/dist/jdenticon.min.js" integrity="sha384-yBhgDqxM50qJV5JPdayci8wCfooqvhFYbIKhv0hTtLvfeeyJMJCscRfFNKIxt43M" crossOrigin="anonymous"/>
+
     <Head>
       <title>{page_title}</title>
       <meta name="viewport" content="width=device-width, initial-scale=1"></meta>
@@ -173,14 +139,31 @@ function SignIn({ login_challenge, client, page_title, project_name, project_ico
       <div className="card-body">
         <h5 className="card-title"><u>Login to {project_name}</u></h5>
         <br></br>
+        <div id="avatar_div">
+          <svg width="80" id="avatar" height="80" data-jdenticon-value={address? address : ''}></svg>
+        </div>
+        <br></br>
+
         
 
-        <div id="login" hidden>
+        <div id="login" hidden={isConnected ? false : true}>
           <p className="card-text">Login with address: <span className="text-info" id="address">{address}</span></p>
-          <button onClick={() => loginButton()} type="button" className="btn btn-outline-secondary btn-lg w-100">Login</button>
+          <button id="polygon" type="submit" 
+            onClick={() => switchNetwork(project.BLOCKCHAIN_NETWORK)} 
+            className="btn btn-outline-secondary btn-lg w-100" 
+            hidden={
+                chain ? 
+                (chain.id != project.BLOCKCHAIN_NETWORK) ? false : true : true
+            }>Connect to Polygon</button>
+          <button onClick={() => loginButton()} type="button" 
+            className="btn btn-outline-secondary btn-lg w-100"
+            disabled={
+              chain ?
+              (chain.id != project.BLOCKCHAIN_NETWORK) ? true : false : false
+            }>Login</button>
         </div>
 
-        <div id="connector_group">
+        <div id="connector_group" hidden={isConnected ? true : false}>
           <h5>Connect your wallet</h5>
           {connectors.map((connector) => (
             // use this div to help us style the buttons
@@ -202,8 +185,18 @@ function SignIn({ login_challenge, client, page_title, project_name, project_ico
           ))}
         </div>
         <br></br>
+        
         <p className="small text-danger" id="web3_error">{error && error.message}</p>
-        <p className="small text-success" id="web3_success"></p><p className="small" id="disconnect" hidden><a className="link-light" onClick={() => disconnectWallet()} href="#">Disconnect Wallet</a></p>
+        <p className="small text-success" id="web3_success">
+          {
+            isConnected ? (
+              <span>Wallet connected.</span>
+            ) : false
+          }
+        </p>
+        <p className="small" id="disconnect" hidden={isConnected ? false : true}>
+          <a className="link-light" onClick={() => disconnectWallet()} href="#">Disconnect Wallet</a>
+        </p>
 
       </div>
 

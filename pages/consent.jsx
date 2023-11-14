@@ -27,12 +27,12 @@ const page_title = "Authorize access to "+client_name;
             <h5 className="card-title">Consent to Access</h5>
             <p className="card-text">Hi! <u>{client_name}</u> wants access to the following resources on your behalf.</p>
 
-            {requested_scope.map(scope => (
+            {requested_scope.map((scope) => (
               <div key={scope.id}>
-              <label key={scope.id} htmlFor={scope} id="label-{scope}" className="form-check-label p-3">
-                <input key={scope.id} type="checkbox" className="grant_scope form-check-input" id={scope} value={scope} name="grant_scope" defaultChecked={'checked'}/>
-                {'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{scope}
-              </label>
+                <label key={scope.id} htmlFor={scope} id="label-{scope}" className="form-check-label p-3">
+                  <input key={scope.id} type="checkbox" className="grant_scope form-check-input" id={scope} value={scope} name="grant_scope" defaultChecked={'checked'}/>
+                  {'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{scope}
+                </label>
               </div>
             ))}
 
