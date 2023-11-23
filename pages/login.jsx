@@ -1,24 +1,22 @@
 // Web3 helpers
 import { useAccount, useConnect, useNetwork, useSwitchNetwork, useSignMessage, useDisconnect } from "wagmi";
-
 // Moralis API
 import { useAuthRequestChallengeEvm } from "@moralisweb3/next";
-
 // NextJS helpers
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/router";
 import { useEffect, useState } from 'react';
 import  Head  from "next/head";
 import Script from "next/script";
-
 // Hydra OAuth2 Config
 import { hydraAdmin } from '../src/hydra_config.ts';
-
 // PROJECT CONFIG
 import { project } from '../src/config.jsx';
+// Axios for API query
+import axios from 'axios';
 
 // SignIn Page
-function SignIn({ login_challenge, client, page_title, project_name, project_icon_url }) {
+function MWALogin({ login_challenge, client, page_title, project_name, project_icon_url }) {
   const { chain } = useNetwork();
   const { switchNetwork } = useSwitchNetwork({ chainId: project.BLOCKCHAIN_NETWORK});
   const { disconnectAsync } = useDisconnect();
@@ -36,6 +34,7 @@ function SignIn({ login_challenge, client, page_title, project_name, project_ico
       const web3_error = document.getElementById('web3_error');
       web3_error.innerText = error.message;
     },
+    // This is used the first time a user connects their wallet
     onSuccess(data) {
         const web3_success = document.getElementById('web3_success');
         const web3_error = document.getElementById('web3_error');
@@ -74,7 +73,6 @@ function SignIn({ login_challenge, client, page_title, project_name, project_ico
 
   // Log the user in via Moralis
   //
-  //
   const loginButton = async () => {
     // reset error msg
     const web3_error = document.getElementById('web3_error');
@@ -89,28 +87,37 @@ function SignIn({ login_challenge, client, page_title, project_name, project_ico
     // Request user sign message
     const signature = await signMessageAsync({ message });
 
-    // Sign into moralis, get callback URL
+    // Sign into moralis
+    // We used to use the signin() callback in [...nextauth] because it's serverside, but that canceled out Next-Auth flow
+    // So now we complete Next-Auth flow and use the auth protected api endpoint to acceptLogin
     const options = {
       message,
       signature,
       redirect: false,
-      callbackUrl: "/user", // We don't actually use this
       payload: JSON.stringify({login_challenge: login_challenge}),
     };
 
     // Send the sign-in payload to Moralis for verification
-    const callback = await signIn("moralis-auth", options);
-    
-    // Forward user to consent or otherwise if we get a valid response
-    if(callback){
-      push(callback.url);
+    const { url } = await signIn("moralis-auth", options);
+    // If signin successful, accept login and redirect
+    // url is just the login page we're currently at if signIn is successful
+    if(url){
+      const datam = {login_challenge: login_challenge};
+      // API POST protected by Next-Auth session
+      await axios.post('https://auth.metawarrior.army/api/acceptLogin', datam)
+      .then((response) =>{
+        console.log("API RESPONSE: ");
+        console.log(response);
+        if(response.data.redirect){
+          push(response.data.redirect);
+        }
+      });
     }
-    else {
-      console.log("Failed to sign-in");
-    }
+
     return true;
   }
 
+  // Not sure if this is still needed
   // This is a workaround for hydration errors caused by how we're displaying the 
   // connector options via connectors.map().
   // Essentially we just delay rendering slightly.
@@ -208,7 +215,11 @@ function SignIn({ login_challenge, client, page_title, project_name, project_ico
   );
 }
 
+//             //
+// SERVER SIDE //
+//             //
 export const getServerSideProps = (async (context) => {
+  // Begin setting the page properties
   const {login_challenge, message, signature, reject} = context.query;
   const page_title = "Login to "+process.env.PROJECT_NAME;
   const project_name = process.env.PROJECT_NAME;
@@ -216,12 +227,15 @@ export const getServerSideProps = (async (context) => {
 
   // return nothing if we don't get a good login_challenge
   try {
+    // Get Login Challenge
     const login_req = await hydraAdmin.getOAuth2LoginRequest({loginChallenge: login_challenge});
+    // Acquire client
     const client = login_req.data.client;
     // First check for reject
     if(reject == 'true'){
+      // Reject login challenge
       const rej_req = await hydraAdmin.rejectOAuth2LoginRequest({loginChallenge: login_challenge});
-      console.log(rej_req);
+      // Redirect user after reject
       if(rej_req.data.redirect_to){
         return {
           redirect: {
@@ -233,9 +247,11 @@ export const getServerSideProps = (async (context) => {
     }
 
     // Skip login if remember == true
+    // Default accept with remember for 1 hour for seamless user experience logging into clients
     if(login_req.data.skip){
-      // Default accept with remember for 1 hour for seamless user experience logging into clients
+      // acceptLoginRequest
       var accpt_req = await hydraAdmin.acceptOAuth2LoginRequest({loginChallenge: login_challenge, acceptOAuth2LoginRequest: {'subject': login_req.data.subject, remember: true, remember_for: 3600,}});
+      // Redirect user after accepting request
       if(accpt_req.data.redirect_to){
         return {
           redirect: {
@@ -247,19 +263,23 @@ export const getServerSideProps = (async (context) => {
       else{
         console.log("Undefined redirect post accept login request.");
       }
-
+      // We're done, return props
       return {props: {login_challenge, client, page_title, project_name, project_icon_url}};
     }
     else{
+      // Login challenge valid, user needs to login
+      // return props
       return {props: {login_challenge, client, page_title, project_name, project_icon_url }};
     }
     
   }
   catch (error){
+    // whoops
     console.log(error);
     return {props: {}};
   }
 
 });
 
-export default SignIn;
+// export our Login app
+export default MWALogin;

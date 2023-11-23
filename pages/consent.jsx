@@ -1,15 +1,66 @@
 // Hydra Admin connection
-import { hydraAdmin } from '../src/hydra_config.ts';
+import { hydraAdmin } from '../src/hydra_config';
 // NextJS Helpers
 import  Head from "next/head";
-// Axios for db query
-import axios from 'axios';
+// db connection
+import conn from "../src/db.jsx";
 
+// Consent is where we're adding the user to the database for some reason
+// This should probably be changed
+async function updateUser(address) {
+  // Search the DB for the user
+  var search;
+  try {
+    const query = 'SELECT * FROM users WHERE address=\''+address+'\'';
+    const result = await conn.query(query);
+    // Store results
+    search = result;
+  } catch ( error ) {
+    console.log( error );
+    return false;
+  }
 
-function Consent({ consent_challenge, client_id, client_name, client_logo, requested_scope, session }) {
- 
+  // Do we have results? If so, return the user object
+  if(search.rowCount > 0){
+    // return user
+    return search.rows[0];
+  }
+  // No results, create initial entry in DB
+  else{
+    const insert_q = 'INSERT INTO users (address,username) VALUES(\''+address+'\',NULL)';
+    try{
+      const insert_result = await conn.query(insert_q);
+    }
+    catch(error){
+      console.log(error);
+      return false;
+    }
+    // Now grab that DB entry we just created
+    try{
+      const search_q = 'SELECT * FROM users WHERE address=\''+address+'\'';
+      const search_r = await conn.query(search_q);
+      search = search_r;
+    }
+    catch(error){
+      console.log(error);
+      return false;
+    }
+    if(search.rowCount > 0){
+      // Return user
+      return search.rows[0];
+    }
+    else{
+      //whoops
+      console.log("Failed to find entry after insert.");
+      return false;
+    }
+  }
+}
 
-const page_title = "Authorize access to "+client_name;
+// Consent App
+function Consent({ consent_challenge, client_id, client_name, client_logo, requested_scope }) {
+  // Set page title
+  const page_title = "Authorize access to "+client_name;
   
   return (
     <>
@@ -51,10 +102,10 @@ const page_title = "Authorize access to "+client_name;
 }
 
 export const getServerSideProps = (async (context) => {
-  // get query
+  // Get Query
   const { consent_challenge, submit, grant_scope, remember } = context.query;
-
-  // If grant scope isn't an array, make it one
+  // If grant scope isn't an array, make it one. 
+  // We need an array for UI rendering
   if(!Array.isArray(grant_scope)){
     var grant_scopeArr = [grant_scope];
   }
@@ -65,22 +116,24 @@ export const getServerSideProps = (async (context) => {
   // Get the Consent Request
   try {
     const consent_req = await hydraAdmin.getOAuth2ConsentRequest({consentChallenge: consent_challenge});
-    //console.log(consent_req.data.subject);
-
-    const datam = {address: consent_req.data.subject};
-    var user;
-    // Create the IPFS url
-
-    await axios.post('https://auth.metawarrior.army/api/db', datam)
-      .then((response) =>{
-        //console.log(response)
-        user = response.data;
-      });
-
-    //console.log(user);
-
-    // BUILD SESSION META HERE
-    const session = {
+    // Check DB for user or create them
+    const user = await updateUser(consent_req.data.subject);
+    // Something went wrong, redirect user
+    if(!user){
+      return {
+        redirect: {
+          permanent: false,
+          destination: "https://www.metawarrior.army"
+        }
+      }
+    }
+    
+    //--------------------//
+    //                    //
+    //  BUILD AUTH TOKEN  //
+    //--------------------//
+    // Today we just take the user row from the DB and assign it to user
+    const token_data = {
       access_token: {
         user: JSON.stringify(user),
         address: consent_req.data.subject,
@@ -88,6 +141,7 @@ export const getServerSideProps = (async (context) => {
       },
       id_token: {
         user: JSON.stringify(user),
+        address: consent_req.data.subject,
         using: 'id_token',
       }
     };
@@ -101,7 +155,7 @@ export const getServerSideProps = (async (context) => {
           grant_scope: consent_req.data.requested_scope,
           remember: true,
           remember_for: 3600,
-          session: session,
+          session: token_data,
         }
       });
       // redirect user back to client
@@ -127,7 +181,7 @@ export const getServerSideProps = (async (context) => {
               grant_scope: grant_scopeArr,
               remember: true,
               remember_for: 3600,
-              session: session,
+              session: token_data,
             }
           });
           // redirect user back to client
@@ -141,6 +195,7 @@ export const getServerSideProps = (async (context) => {
           }
         }
         catch(error){
+          // whoops
           console.log(error);
         }
       }
@@ -162,6 +217,7 @@ export const getServerSideProps = (async (context) => {
           }
         }
         catch(error){
+          // whoops
           console.log(error.message);
         }
       }
@@ -173,9 +229,11 @@ export const getServerSideProps = (async (context) => {
     const client_name = consent_req.data.client.client_name;
     const client_logo = consent_req.data.client.logo_uri;
     const requested_scope = consent_req.data.requested_scope;
+    // return props
     return {props: {consent_challenge, client_id, client_name, client_logo, requested_scope }}; 
   }
   catch (error){
+    // whoops
     console.log(error);
     return {props: {consent_challenge}}; 
   }
