@@ -5,7 +5,7 @@ import  Head from "next/head";
 // db connection
 import conn from "../src/db.jsx";
 // Project Config
-import project from "../src/config.jsx";
+import { project } from "../src/config.jsx";
 
 // Consent is where we're adding the user to the database for some reason
 // This should probably be changed

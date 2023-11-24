@@ -1,5 +1,13 @@
 // Web3 helpers
-import { useAccount, useConnect, useNetwork, useSwitchNetwork, useSignMessage, useDisconnect } from "wagmi";
+import { useAccount, 
+  useConnect, 
+  useNetwork, 
+  useSwitchNetwork, 
+  useSignMessage, 
+  useDisconnect,
+  useWalletClient } from "wagmi";
+// chains
+import { polygon, polygonZkEvmTestnet } from "wagmi/chains";
 // Moralis API
 import { useAuthRequestChallengeEvm } from "@moralisweb3/next";
 // NextJS helpers
@@ -52,6 +60,14 @@ function MWALogin({ login_challenge, client, page_title, project_name, project_i
         }
     }
   });
+  
+  // Function for adding the chain to the user's wallet if they don't have it
+  const { data: walletClient } = useWalletClient();
+  const addChain = async () => {
+    // wrong network name in wagmi for polygon :(
+    //await walletClient.addChain({ chain: polygon });
+    await switchNetwork(project.BLOCKCHAIN_ID);
+  }
 
   // Connect to the user's wallet
   //
@@ -106,7 +122,7 @@ function MWALogin({ login_challenge, client, page_title, project_name, project_i
       // API POST protected by Next-Auth session
       await axios.post('https://auth.metawarrior.army/api/acceptLogin', datam)
       .then((response) =>{
-        console.log("API RESPONSE: ");
+        //console.log("API RESPONSE: ");
         //console.log(response);
         if(response.data.redirect){
           push(response.data.redirect);
@@ -116,6 +132,7 @@ function MWALogin({ login_challenge, client, page_title, project_name, project_i
 
     return true;
   }
+  
 
   // Not sure if this is still needed
   // This is a workaround for hydration errors caused by how we're displaying the 
@@ -156,7 +173,7 @@ function MWALogin({ login_challenge, client, page_title, project_name, project_i
         <div id="login" hidden={isConnected ? false : true}>
           <p className="card-text">Login with address: <span className="text-info" id="address">{address}</span></p>
           <button id="polygon" type="submit" 
-            onClick={() => switchNetwork(project.BLOCKCHAIN_NETWORK)} 
+            onClick={() => addChain()} 
             className="btn btn-outline-secondary btn-lg w-100" 
             hidden={
                 chain ? 
