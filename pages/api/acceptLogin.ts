@@ -24,8 +24,6 @@ export default async function handler(
         // Get the subject from the request
         const { login_challenge, address } = req.body;
 
-        //console.log("ACCEPTLOGIN SESSION USER: "+session.user.address);
-        
         // Try accepting login with Hydra
         // Subject is the user's address
         try {

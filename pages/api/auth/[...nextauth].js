@@ -17,13 +17,6 @@ export const authOptions = {
       session.user = token.user;
       return session;
     },
-
-    // signIn callback.
-    // This executes upon successful signIn on the login page
-    // Moralis Verify EVM Challenge returns a 'user' object complete
-    // with the unique address the user is using. We ignore 'profile' in
-    // this response.
-    
   },
 };
 
