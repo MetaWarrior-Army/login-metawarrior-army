@@ -102,12 +102,12 @@ function MWALogin({ login_challenge, client, page_title, project_name, project_i
     // If signin successful, accept login and redirect
     // url is just the login page we're currently at if signIn is successful
     if(url){
-      const datam = {login_challenge: login_challenge};
+      const datam = {login_challenge: login_challenge, address: address};
       // API POST protected by Next-Auth session
       await axios.post('https://auth.metawarrior.army/api/acceptLogin', datam)
       .then((response) =>{
         console.log("API RESPONSE: ");
-        console.log(response);
+        //console.log(response);
         if(response.data.redirect){
           push(response.data.redirect);
         }

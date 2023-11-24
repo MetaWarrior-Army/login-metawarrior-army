@@ -159,6 +159,7 @@ export const getServerSideProps = (async (context) => {
         }
       });
       // redirect user back to client
+      //console.log(accept_req.data.redirect_to);
       if(accept_req.data.redirect_to){
         return {
           redirect: {

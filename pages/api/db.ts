@@ -16,7 +16,7 @@ export default async function handler(
 ) {
     const session = await getServerSession(req,res,authOptions);
     
-    //if(session.user){
+    if(session.user){
     
         // Get the subject from the request
         const { address } = req.body;
@@ -75,5 +75,5 @@ export default async function handler(
             }
             
         }
-    //}
+    }
 };

@@ -22,15 +22,18 @@ export default async function handler(
     // If valid sesson proceed
     if(session.user){
         // Get the subject from the request
-        const { login_challenge } = req.body;
+        const { login_challenge, address } = req.body;
 
+        //console.log("ACCEPTLOGIN SESSION USER: "+session.user.address);
+        
         // Try accepting login with Hydra
         // Subject is the user's address
         try {
             // Accept Login
+            //console.log(session.user.address);
             var accpt_res = await hydraAdmin.acceptOAuth2LoginRequest({loginChallenge: login_challenge, 
               acceptOAuth2LoginRequest: {
-                'subject': session.user.address, 
+                subject: session.user.address, 
                 remember: true, 
                 remember_for: 3600,
               }
@@ -39,9 +42,10 @@ export default async function handler(
         catch (error) {
             // Whoops
             console.log(error.message);
-            console.log("Subject: ",session.user.address);
+            console.log("Subject: ", session.user.address);
         }
 
+        //console.log(accpt_res.data.redirect_to);
         // Redirect user to next step in flow, provide redirect url from Hydra
         res.status(200).json({redirect:  accpt_res.data.redirect_to});
         return;
