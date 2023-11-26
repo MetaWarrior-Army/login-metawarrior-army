@@ -17,7 +17,7 @@ export default async function handler(
     const { address } = req.body;
 
     if(address){
-        console.log(address);
+        //console.log(address);
     }
     else{
         res.status(500).json({message: ''});
@@ -30,7 +30,7 @@ export default async function handler(
     const token_resp = await hydraAdmin.introspectOAuth2Token({token: access_token});
     //console.log(token_resp);
     if(token_resp.data.active){
-        console.log(token_resp.data.sub+" is active");
+        //console.log(token_resp.data.sub+" is active");
 
         // Search the DB for the user
         var search;
