@@ -13,7 +13,7 @@ async function updateUser(address) {
   // Search the DB for the user
   var search;
   try {
-    const query = 'SELECT * FROM users WHERE address=\''+String(address).toLowerCase()+'\'';
+    const query = 'SELECT * FROM users WHERE address=\''+address+'\'';
     const result = await conn.query(query);
     // Store results
     search = result;
@@ -29,7 +29,7 @@ async function updateUser(address) {
   }
   // No results, create initial entry in DB
   else{
-    const insert_q = 'INSERT INTO users (address,username) VALUES(\''+String(address).toLowerCase()+'\',NULL)';
+    const insert_q = 'INSERT INTO users (address,username) VALUES(\''+address+'\',NULL)';
     try{
       const insert_result = await conn.query(insert_q);
     }
@@ -39,7 +39,7 @@ async function updateUser(address) {
     }
     // Now grab that DB entry we just created
     try{
-      const search_q = 'SELECT * FROM users WHERE address=\''+String(address).toLowerCase()+'\'';
+      const search_q = 'SELECT * FROM users WHERE address=\''+address+'\'';
       const search_r = await conn.query(search_q);
       search = search_r;
     }
