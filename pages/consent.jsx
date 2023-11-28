@@ -137,13 +137,17 @@ export const getServerSideProps = (async (context) => {
     // Today we just take the user row from the DB and assign it to user
     const token_data = {
       access_token: {
-        user: JSON.stringify(user),
+        username: user.username,
+        email: user.username+"@metawarrior.army",
         address: consent_req.data.subject,
+        userObj: JSON.stringify(user),
         using: 'access_token',
       },
       id_token: {
-        user: JSON.stringify(user),
+        username: user.username,
+        email: user.username+"@metawarrior.army",
         address: consent_req.data.subject,
+        userObj: JSON.stringify(user),
         using: 'id_token',
       }
     };
