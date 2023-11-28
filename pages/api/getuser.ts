@@ -15,6 +15,7 @@ export default async function handler(
 ) {
 
     const { address } = req.body;
+    console.log(req);
 
     if(address){
         //console.log(address);
