@@ -1,11 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 // db connection
 import conn2 from "../../src/db2.jsx";
-// Hydra OAuth Config
-import { hydraAdmin } from '../../src/hydra_config';
-// Axios for API query
-import axios from 'axios';
-import { access } from 'fs';
 
 /*
 type ResponseData = {
@@ -27,6 +22,7 @@ export default async function handler(
         res.status(500);
         return;
     }
+    //console.log(access_token);
 
     const datam = { token: access_token };
     await fetch('https://auth.metawarrior.army/userinfo', {
@@ -62,6 +58,7 @@ export default async function handler(
     }
     */      
 
+    //console.log(userObj);
     
     if(userObj.email){
         // lookup user in the postfix database to get quota rules
@@ -94,9 +91,11 @@ export default async function handler(
     }
     else{
         res.status(500);
+        return;
     }
     
 
     res.status(500);
+    return;
     
 }
