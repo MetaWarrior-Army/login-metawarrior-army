@@ -129,6 +129,34 @@ export const getServerSideProps = (async (context) => {
         }
       }
     }
+
+    //---------------------------------------------//
+    //  Screen clients based on user access levels //
+    //---------------------------------------------//
+    // DISCOURSE CLIENT
+    if(consent_req.data.client.client_id == '57a8acfe-6374-4b2e-98a7-82156506bd81'){
+      // check if email is active
+      if(user.email_active){
+        //continue
+      }
+      else{
+        // User doesn't have access yet.
+        const rej_req = await hydraAdmin.rejectOAuth2ConsentRequest({
+          consentChallenge: consent_challenge,
+        });
+        // redirect user
+        if(rej_req.data.redirect_to){
+          return {
+            redirect: {
+              destination: rej_req.data.redirect_to,
+              permanent: false,
+            }
+          };
+        }
+      }
+
+    }
+
     
     //--------------------//
     //                    //
@@ -137,18 +165,22 @@ export const getServerSideProps = (async (context) => {
     // Today we just take the user row from the DB and assign it to user
     const token_data = {
       access_token: {
+        id: user.id,
         username: user.username,
         email: user.username+"@metawarrior.army",
         address: consent_req.data.subject,
         userObj: JSON.stringify(user),
         using: 'access_token',
+        active: true,
       },
       id_token: {
+        id: user.id,
         username: user.username,
         email: user.username+"@metawarrior.army",
         address: consent_req.data.subject,
         userObj: JSON.stringify(user),
         using: 'id_token',
+        active: true,
       }
     };
     

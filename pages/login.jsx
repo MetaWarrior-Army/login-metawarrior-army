@@ -224,7 +224,7 @@ function MWALogin({ login_challenge, client, page_title, project_name, project_i
 
       </div>
 
-      <h3><a href={"/login?login_challenge="+login_challenge+"&reject=true"} className="link-light">Back to {project_name}</a></h3>
+      
       <br></br>
 
     </div>
