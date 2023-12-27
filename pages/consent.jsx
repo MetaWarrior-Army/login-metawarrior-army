@@ -192,7 +192,8 @@ export const getServerSideProps = (async (context) => {
         acceptOAuth2ConsentRequest: {
           grant_scope: consent_req.data.requested_scope,
           remember: true,
-          remember_for: 3600,
+          // Remember for 7 days
+          remember_for: 604800,
           session: token_data,
         }
       });
@@ -219,7 +220,8 @@ export const getServerSideProps = (async (context) => {
             acceptOAuth2ConsentRequest: {
               grant_scope: grant_scopeArr,
               remember: true,
-              remember_for: 3600,
+              // Remember for 7 days
+              remember_for: 604800,
               session: token_data,
             }
           });
